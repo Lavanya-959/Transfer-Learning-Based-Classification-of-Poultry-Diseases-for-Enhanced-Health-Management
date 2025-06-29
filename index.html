@@ -1,0 +1,952 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PoultryHealth AI | Disease Classification for Enhanced Poultry Management</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4caf50;
+            --primary-dark: #388e3c;
+            --secondary: #ff9800;
+            --accent: #2196f3;
+            --light: #f8f9fa;
+            --dark: #263238;
+            --gray: #607d8b;
+            --success: #8bc34a;
+            --warning: #ffc107;
+            --danger: #f44336;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            color: var(--dark);
+            background-color: #f5f7f6;
+            line-height: 1.6;
+        }
+        
+        h1, h2, h3, h4, h5 {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+        }
+        
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Navigation */
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            padding: 1rem 0;
+        }
+        
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            text-decoration: none;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 1.5rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark);
+            font-weight: 500;
+            transition: color 0.3s;
+            position: relative;
+            padding: 5px 0;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+        
+        .nav-links a:hover::after {
+            width: 100%;
+        }
+        
+        .cta-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(76, 175, 80, 0.3);
+            font-size: 1rem;
+        }
+        
+        .cta-button:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(76, 175, 80, 0.4);
+        }
+        
+        /* Hero Section */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1581698248357-2d1c2b7ce4b4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80') no-repeat center center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            padding: 0 2rem;
+            margin-top: 70px;
+        }
+        
+        .hero-content {
+            max-width: 900px;
+        }
+        
+        .hero h1 {
+            font-size: 3.2rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 1px 5px rgba(0, 0, 0, 0.5);
+        }
+        
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 2rem;
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+            padding: 0.8rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+        
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Diseases Section */
+        .diseases {
+            padding: 5rem 0;
+            background: white;
+        }
+        
+        .section-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: var(--primary-dark);
+            margin-bottom: 1rem;
+        }
+        
+        .section-title p {
+            color: var(--gray);
+            max-width: 700px;
+            margin: 0 auto;
+            font-size: 1.2rem;
+        }
+        
+        .diseases-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .disease-card {
+            background: #f9f9f9;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s;
+        }
+        
+        .disease-card:hover {
+            transform: translateY(-10px);
+        }
+        
+        .disease-icon {
+            height: 120px;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 3rem;
+        }
+        
+        .disease-content {
+            padding: 1.5rem;
+        }
+        
+        .disease-content h3 {
+            font-size: 1.4rem;
+            margin-bottom: 0.8rem;
+            color: var(--primary-dark);
+        }
+        
+        .disease-content p {
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+        
+        .disease-tag {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .tag-salmonella {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--danger);
+        }
+        
+        .tag-newcastle {
+            background: rgba(255, 152, 0, 0.1);
+            color: var(--warning);
+        }
+        
+        .tag-coccidiosis {
+            background: rgba(33, 150, 243, 0.1);
+            color: var(--accent);
+        }
+        
+        .tag-healthy {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--primary);
+        }
+        
+        /* Scenarios Section */
+        .scenarios {
+            padding: 5rem 0;
+            background: #f0f7f0;
+        }
+        
+        .scenario-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .scenario-card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .scenario-icon {
+            flex: 0 0 80px;
+            height: 80px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 2rem;
+        }
+        
+        .scenario-content h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary-dark);
+        }
+        
+        .scenario-content p {
+            color: var(--gray);
+            margin-bottom: 1rem;
+        }
+        
+        /* How It Works */
+        .how-it-works {
+            padding: 5rem 0;
+            background: white;
+        }
+        
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 3rem;
+            flex-wrap: wrap;
+        }
+        
+        .step {
+            flex: 0 0 calc(25% - 20px);
+            text-align: center;
+            padding: 2rem 1rem;
+            position: relative;
+        }
+        
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            border-radius: 50%;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1.5rem;
+        }
+        
+        .step h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--primary-dark);
+        }
+        
+        .step p {
+            color: var(--gray);
+        }
+        
+        .step::after {
+            content: '→';
+            position: absolute;
+            right: -20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 2rem;
+            color: var(--gray);
+        }
+        
+        .step:last-child::after {
+            display: none;
+        }
+        
+        /* Diagnosis Section */
+        .diagnosis {
+            padding: 5rem 0;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+        }
+        
+        .diagnosis-container {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 3rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .diagnosis-form {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        .form-group input, 
+        .form-group select, 
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+        }
+        
+        .full-width {
+            grid-column: span 2;
+        }
+        
+        .result-container {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            margin-top: 2rem;
+            color: var(--dark);
+            display: none;
+        }
+        
+        .result-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .result-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            margin-right: 1rem;
+        }
+        
+        .result-healthy {
+            background: rgba(76, 175, 80, 0.2);
+            color: var(--primary);
+        }
+        
+        .result-disease {
+            background: rgba(244, 67, 54, 0.2);
+            color: var(--danger);
+        }
+        
+        .result-content h3 {
+            font-size: 1.6rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .result-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .treatment-list {
+            margin-top: 1.5rem;
+            padding-left: 1.5rem;
+        }
+        
+        .treatment-list li {
+            margin-bottom: 0.8rem;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--dark);
+            color: white;
+            padding: 4rem 0 2rem;
+        }
+        
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .footer-col h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        
+        .footer-col h3::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50px;
+            height: 2px;
+            background: var(--primary);
+        }
+        
+        .footer-links {
+            list-style: none;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.8rem;
+        }
+        
+        .footer-links a {
+            color: #a0aec0;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+        
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        
+        .social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .social-links a:hover {
+            background: var(--primary);
+            transform: translateY(-3px);
+        }
+        
+        .copyright {
+            text-align: center;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a0aec0;
+            font-size: 0.9rem;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 900px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .step {
+                flex: 0 0 calc(50% - 20px);
+                margin-bottom: 2rem;
+            }
+            
+            .step::after {
+                display: none;
+            }
+            
+            .diagnosis-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .full-width {
+                grid-column: span 1;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar .nav-links {
+                display: none;
+            }
+            
+            .hero-buttons {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .scenario-card {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .step {
+                flex: 0 0 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <i class="fas fa-disease"></i>
+                PoultryHealth AI
+            </a>
+            <ul class="nav-links">
+                <li><a href="#diseases">Diseases</a></li>
+                <li><a href="#scenarios">Use Cases</a></li>
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#diagnosis">Diagnosis</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+            <button class="cta-button">Download App</button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container hero-content">
+            <h1>AI-Powered Poultry Disease Classification</h1>
+            <p>Using transfer learning technology to detect Salmonella, New Castle Disease, Coccidiosis, and Healthy poultry for enhanced farm management</p>
+            <div class="hero-buttons">
+                <button class="cta-button">Start Free Diagnosis</button>
+                <button class="btn-secondary">Watch Demo</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Diseases Section -->
+    <section id="diseases" class="diseases">
+        <div class="container">
+            <div class="section-title">
+                <h2>Targeted Poultry Diseases</h2>
+                <p>Our AI system specializes in identifying these common poultry health issues</p>
+            </div>
+            
+            <div class="diseases-grid">
+                <div class="disease-card">
+                    <div class="disease-icon">
+                        <i class="fas fa-bacteria"></i>
+                    </div>
+                    <div class="disease-content">
+                        <span class="disease-tag tag-salmonella">Bacterial</span>
+                        <h3>Salmonella</h3>
+                        <p>Salmonella infection in poultry causes diarrhea, dehydration, reduced egg production, and increased mortality.</p>
+                    </div>
+                </div>
+                
+                <div class="disease-card">
+                    <div class="disease-icon">
+                        <i class="fas fa-virus"></i>
+                    </div>
+                    <div class="disease-content">
+                        <span class="disease-tag tag-newcastle">Viral</span>
+                        <h3>New Castle Disease</h3>
+                        <p>Highly contagious viral disease causing respiratory distress, nervous symptoms, and high mortality rates.</p>
+                    </div>
+                </div>
+                
+                <div class="disease-card">
+                    <div class="disease-icon">
+                        <i class="fas fa-parasite"></i>
+                    </div>
+                    <div class="disease-content">
+                        <span class="disease-tag tag-coccidiosis">Parasitic</span>
+                        <h3>Coccidiosis</h3>
+                        <p>Intestinal disease caused by protozoan parasites, leading to diarrhea, weight loss, and decreased growth.</p>
+                    </div>
+                </div>
+                
+                <div class="disease-card">
+                    <div class="disease-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="disease-content">
+                        <span class="disease-tag tag-healthy">Healthy</span>
+                        <h3>Healthy Birds</h3>
+                        <p>Our system also identifies healthy poultry with 95% accuracy, preventing unnecessary treatments.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Scenarios Section -->
+    <section id="scenarios" class="scenarios">
+        <div class="container">
+            <div class="section-title">
+                <h2>Real-World Application Scenarios</h2>
+                <p>How our technology is transforming poultry health management</p>
+            </div>
+            
+            <div class="scenario-container">
+                <div class="scenario-card">
+                    <div class="scenario-icon">
+                        <i class="fas fa-tractor"></i>
+                    </div>
+                    <div class="scenario-content">
+                        <h3>Outbreak in a Rural Community</h3>
+                        <p>A small rural community relies heavily on poultry farming for its livelihood. Recently, farmers noticed an increase in sick birds exhibiting symptoms like lethargy, diarrhea, and reduced egg production. Without immediate access to veterinary services, they used our mobile application to input observed symptoms and environmental data.</p>
+                        <p><strong>Outcome:</strong> The AI quickly classified the disease as Coccidiosis and provided recommendations for treatment and management. Farmers took swift action, reducing disease spread and preventing economic losses.</p>
+                    </div>
+                </div>
+                
+                <div class="scenario-card">
+                    <div class="scenario-icon">
+                        <i class="fas fa-industry"></i>
+                    </div>
+                    <div class="scenario-content">
+                        <h3>Commercial Poultry Farm Management</h3>
+                        <p>A large commercial poultry farm implemented our disease classification system to monitor flock health. During daily health checks, the system identified symptoms consistent with New Castle Disease in a specific section of the farm.</p>
+                        <p><strong>Outcome:</strong> Early detection enabled farm management to quarantine affected birds and implement control measures promptly. This prevented a widespread outbreak, saved costs, and maintained the farm's productivity and reputation.</p>
+                    </div>
+                </div>
+                
+                <div class="scenario-card">
+                    <div class="scenario-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <div class="scenario-content">
+                        <h3>Research and Training for Veterinary Students</h3>
+                        <p>A veterinary school integrated our application into its curriculum. Students use the app to input data from case studies and real-world scenarios, learning to diagnose diseases like Salmonella, New Castle Disease, and Coccidiosis.</p>
+                        <p><strong>Outcome:</strong> Hands-on training with modern technology equips future veterinarians with valuable diagnostic skills, preparing them to better serve the poultry industry with detailed disease information and treatment options.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-title">
+                <h2>How Our Technology Works</h2>
+                <p>The science behind our transfer learning-based classification system</p>
+            </div>
+            
+            <div class="steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3>Data Collection</h3>
+                    <p>Farmers input symptoms, environmental conditions, and biological samples via our mobile app</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3>AI Analysis</h3>
+                    <p>Our transfer learning model processes the data using pre-trained neural networks</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3>Disease Classification</h3>
+                    <p>The system identifies patterns and classifies into one of four categories with 96% accuracy</p>
+                </div>
+                
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3>Actionable Insights</h3>
+                    <p>Immediate diagnosis with treatment recommendations and management strategies</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Diagnosis Section -->
+    <section id="diagnosis" class="diagnosis">
+        <div class="container">
+            <div class="section-title">
+                <h2>Try Our Diagnosis System</h2>
+                <p>Enter poultry health information to receive an AI-powered diagnosis</p>
+            </div>
+            
+            <div class="diagnosis-container">
+                <form id="diagnosisForm">
+                    <div class="diagnosis-form">
+                        <div class="form-group">
+                            <label for="symptoms">Observed Symptoms</label>
+                            <select id="symptoms" multiple>
+                                <option value="lethargy">Lethargy</option>
+                                <option value="diarrhea">Diarrhea</option>
+                                <option value="reduced_egg">Reduced Egg Production</option>
+                                <option value="respiratory">Respiratory Distress</option>
+                                <option value="nervous">Nervous Symptoms</option>
+                                <option value="weight_loss">Weight Loss</option>
+                                <option value="dehydration">Dehydration</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="environment">Environmental Conditions</label>
+                            <select id="environment">
+                                <option value="normal">Normal</option>
+                                <option value="hot">Hot/Humid</option>
+                                <option value="cold">Cold/Damp</option>
+                                <option value="crowded">Crowded Conditions</option>
+                                <option value="poor_hygiene">Poor Hygiene</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group full-width">
+                            <label for="notes">Additional Notes</label>
+                            <textarea id="notes" placeholder="Describe any other observations or test results..."></textarea>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="diagnoseBtn" class="cta-button">Diagnose Now</button>
+                </form>
+                
+                <div class="result-container" id="resultContainer">
+                    <div class="result-header">
+                        <div class="result-icon result-disease">
+                            <i class="fas fa-virus"></i>
+                        </div>
+                        <div class="result-content">
+                            <h3>Diagnosis: Coccidiosis</h3>
+                            <p>Probability: 92% | Confidence: High</p>
+                        </div>
+                    </div>
+                    
+                    <p>Based on the symptoms and environmental conditions you provided, our AI system has identified Coccidiosis as the most probable condition affecting your poultry.</p>
+                    
+                    <h4>Recommended Treatment:</h4>
+                    <ul class="treatment-list">
+                        <li>Administer anticoccidial medication (e.g., Amprolium) in drinking water for 5-7 days</li>
+                        <li>Improve sanitation in the poultry house with thorough cleaning and disinfection</li>
+                        <li>Reduce stocking density to minimize transmission</li>
+                        <li>Provide vitamin supplements (especially A and K) to support recovery</li>
+                        <li>Isolate affected birds to prevent spread to healthy flock</li>
+                    </ul>
+                    
+                    <p><strong>Prevention Strategy:</strong> Implement a regular rotation of anticoccidial drugs in feed, maintain dry litter conditions, and practice strict biosecurity measures.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h3>PoultryHealth AI</h3>
+                    <p>Using advanced transfer learning technology to revolutionize poultry disease management and improve farm productivity worldwide.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>Quick Links</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Home</a></li>
+                        <li><a href="#diseases">Diseases</a></li>
+                        <li><a href="#scenarios">Use Cases</a></li>
+                        <li><a href="#how-it-works">Technology</a></li>
+                        <li><a href="#diagnosis">Diagnosis</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>Resources</h3>
+                    <ul class="footer-links">
+                        <li><a href="#">Research Papers</a></li>
+                        <li><a href="#">Case Studies</a></li>
+                        <li><a href="#">Poultry Health Guides</a></li>
+                        <li><a href="#">Disease Prevention</a></li>
+                        <li><a href="#">Farm Management</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-col">
+                    <h3>Contact Us</h3>
+                    <ul class="footer-links">
+                        <li><i class="fas fa-map-marker-alt"></i> 123 AgriTech Park, Farmville</li>
+                        <li><i class="fas fa-phone"></i> +1 (800) POULTRY-1</li>
+                        <li><i class="fas fa-envelope"></i> support@poultryhealthai.com</li>
+                        <li><i class="fas fa-download"></i> Download Mobile App</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="copyright">
+                <p>&copy; 2023 PoultryHealth AI. All rights reserved. | Transfer Learning-Based Classification of Poultry Diseases for Enhanced Health Management</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const diagnoseBtn = document.getElementById('diagnoseBtn');
+            const resultContainer = document.getElementById('resultContainer');
+            
+            // Simulate diagnosis process
+            diagnoseBtn.addEventListener('click', function() {
+                // Show loading state
+                diagnoseBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
+                diagnoseBtn.disabled = true;
+                
+                // Simulate AI processing time
+                setTimeout(() => {
+                    // Show result
+                    resultContainer.style.display = 'block';
+                    
+                    // Scroll to result
+                    resultContainer.scrollIntoView({ behavior: 'smooth' });
+                    
+                    // Reset button
+                    diagnoseBtn.innerHTML = 'Diagnose Now';
+                    diagnoseBtn.disabled = false;
+                }, 2000);
+            });
+            
+            // Smooth scrolling for navigation links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        window.scrollTo({
+                            top: target.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
